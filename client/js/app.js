@@ -130,7 +130,7 @@ class EventManager {
             },
             events: eventos,
             eventDragStart: (event,jsEvent) => {
-                $('.delete').find('img').attr('src', "/css/delete.png");
+                $('.delete').find('img').attr('src', "/css/trash-open.png");
                 $('.delete').css('background-color', '#a70f19')
             },
             eventDragStop: (event,jsEvent) => {
@@ -146,6 +146,7 @@ class EventManager {
                     jsEvent.pageY >= y1 && jsEvent.pageY <= y2) {
                         this.eliminarEvento(event)
                         $('.calendario').fullCalendar('removeEvents', event._id);
+                        $('.delete').find('img').attr('src', "/css/delete.png");
                     }
                 }
             })
