@@ -27,6 +27,8 @@
                 $.post('/login',{user: nombreUsuario.val(), pass: pass.val()}, function(response) {
                     if (response == "Validado") {
                         window.location.href = "http://localhost:3000/main.html"
+                    }else{
+                         alert("Usuario invalido.")
                     }
                 })
             } else {

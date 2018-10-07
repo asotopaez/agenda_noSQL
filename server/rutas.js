@@ -1,13 +1,11 @@
 const Router = require('express').Router();
 const model = require('./model.js')
 
-
-
 // Login de un usuario
-Router.post('/login', function(req, res) {
+Router.post('/login', (req, res) => {
     let usuario = req.body.user
     let password = req.body.pass
-    model.Users.findOne({username: usuario,pass:password}).exec(function(err, doc){
+    model.Users.findOne({username: usuario,pass:password}).exec((err, doc) =>{
         if (err) {
             res.status(500)
             res.send(err)
@@ -23,12 +21,12 @@ Router.post('/login', function(req, res) {
 })
 
 // Logout de un usuario
-Router.get('/logout', function(req, res, next) {
+Router.get('/logout', (req, res, next) => {
   if (req.session) {
     // delete session object
-    req.session.destroy(function(err) {
-      if(err) {
-        return next(err);
+    req.session.destroy((error) => {
+      if(error) {
+        return next(error);
       } else {
         return res.send("Logout")
       }
@@ -39,7 +37,7 @@ Router.get('/logout', function(req, res, next) {
 
 
 // Agregar a un usuario
-Router.post('/user/new', function(req, res) {
+Router.post('/user/new', (req, res) => {
     let user = new model.Users({
         userId: Math.floor(Math.random() * 50),
         name: req.body.nombres,
@@ -47,7 +45,7 @@ Router.post('/user/new', function(req, res) {
         pass: req.body.pass,
         username: req.body.correo
     })
-    user.save(function(error) {
+    user.save((error) => {
         if (error) {
             res.status(500)
             res.json(error)
@@ -57,17 +55,17 @@ Router.post('/user/new', function(req, res) {
 })
 
 //Obtener todos los registos del usuarios
-Router.get('/events/all', function(req, res) {
+Router.get('/events/all', (req, res) => {
     let uid = req.session.userId
     if(uid){
         model.Users.find({_id:uid}).
-          exec(function (err, agenda_user) {
+          exec((err, agenda_user) => {
                 if (err) {
                     res.status(500)
                     res.json(err)
                 }else{
                     model.Agenda.find({'_id' : { "$in": agenda_user[0].agendas } }).
-                    exec(function(err,agenda){
+                    exec((error, agenda) =>{
                         res.json(agenda)
                     })  
                 }
@@ -95,10 +93,10 @@ Router.post('/events/new', (req, res)=> {
           });
 })
 
-// Eliminar un cita por su id
-Router.post('/events/delete/:id', function(req, res) {
+// Eliminar cita por su id
+Router.post('/events/delete/:id', (req, res) => {
     let uid = req.params.id
-    model.Agenda.remove({"_id": uid}, function(error) {
+    model.Agenda.remove({"_id": uid}, (error) => {
         if(error) {
             res.status(500)
             res.json(error)
@@ -111,16 +109,14 @@ Router.post('/events/delete/:id', function(req, res) {
 })
 
 // Actualizar cita
-Router.post('/events/update/:id', function(req, res) {
+Router.post('/events/update/:id', (req, res) => {
     let uid = req.params.id
-    let updateDate = { "$set":{ "start": req.body.start , "end": req.body.end } } 
-    console.log('update',uid, updateDate)
-    model.Agenda.update({_id: uid},updateDate, function(error, response) {
+    let updateDate = { "$set":{ "start": req.body.start , "end": req.body.end } }
+    model.Agenda.update({_id: uid},updateDate, (error, response) => {
         if(error) {
-            res.status(500)
-            res.json(error)
+            res.json({msj:"Error","data":error});
         }else{
-            res.send("Registro actualizado.")
+            res.json({msj:"Agenda Salvada", "data": response});
         }
     })
 })

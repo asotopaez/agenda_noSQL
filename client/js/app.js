@@ -25,12 +25,23 @@ class EventManager {
 
     actualizarEvento(evento) {
         let eventId = evento._id
-        let ev = {
-                    start: evento.start,
-                    end: evento.end
-                }
+        let startact = evento.start
+        let endact = evento.end
+        let ev = {}
+        if (startact!=null){
+            ev['start'] = startact['_d']
+        }
+        if(endact!=null){
+            ev['end'] = endact['_d']
+        }
         $.post('/events/update/'+eventId, ev, (response) => {
-            alert(response)
+            if(response.msj!="Error"){
+                $('#start_date, #titulo, #end_date').val('');
+                $('.calendario').fullCalendar('renderEvent', response.data)
+                alert(response.msj)
+            }else{
+                alert(response.data)
+            }
         })
     }
 
@@ -101,7 +112,6 @@ class EventManager {
     }
 
     inicializarCalendario(eventos) {
-        console.log('calendario',eventos)
         $('.calendario').fullCalendar({
             header: {
                 left: 'prev,next today',
@@ -115,7 +125,7 @@ class EventManager {
             droppable: true,
             dragRevertDuration: 0,
             timeFormat: 'H:mm',
-            eventDrop: (event) => {
+            eventDrop: (event, jsEvent) => {
                 this.actualizarEvento(event)
             },
             events: eventos,
@@ -124,8 +134,8 @@ class EventManager {
                 $('.delete').css('background-color', '#a70f19')
             },
             eventDragStop: (event,jsEvent) => {
-                console.log(event)
-                console.log(jsEvent)
+                //console.log(event)
+                //console.log(jsEvent)
                 var trashEl = $('.delete');
                 var ofs = trashEl.offset();
                 var x1 = ofs.left;
