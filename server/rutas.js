@@ -2,30 +2,18 @@ const Router = require('express').Router();
 const model = require('./model.js')
 
 
-//Obtener todos los registos del usuarios
-Router.get('/allevents/:id', function(req, res) {
-    let uid = req.params.id 
-    model.User.find({userId:uid}).
-      populate('agenda').
-      exec(function (err, agenda) {
-            if (err) {
-                res.status(500)
-                res.json(err)
-            }
-            res.json(agenda)
-      });
-})
 
-// Obtener un usuario por su id
+// Login de un usuario
 Router.post('/login', function(req, res) {
     let usuario = req.body.user
     let password = req.body.pass
-    model.Users.findOne({usuario: usuario,pass:password}).exec(function(err, doc){
+    model.Users.findOne({username: usuario,pass:password}).exec(function(err, doc){
         if (err) {
             res.status(500)
             res.send(err)
         }else{
             if(doc!=null){
+                req.session.userId = doc._id
                 res.send("Validado")
             }else{
                 res.send("No Valido")
@@ -34,15 +22,30 @@ Router.post('/login', function(req, res) {
     })
 })
 
+// Logout de un usuario
+Router.get('/logout', function(req, res, next) {
+  if (req.session) {
+    // delete session object
+    req.session.destroy(function(err) {
+      if(err) {
+        return next(err);
+      } else {
+        return res.send("Logout")
+      }
+    });
+  }
+});
+
+
+
 // Agregar a un usuario
 Router.post('/user/new', function(req, res) {
-    console.log(req.body)
     let user = new model.Users({
         userId: Math.floor(Math.random() * 50),
-        nombres: req.body.nombres,
-        apellidos: req.body.apellidos,
+        name: req.body.nombres,
+        lastname: req.body.apellidos,
         pass: req.body.pass,
-        usuario: req.body.correo
+        username: req.body.correo
     })
     user.save(function(error) {
         if (error) {
@@ -53,21 +56,73 @@ Router.post('/user/new', function(req, res) {
     })
 })
 
+//Obtener todos los registos del usuarios
+Router.get('/events/all', function(req, res) {
+    let uid = req.session.userId
+    if(uid){
+        model.Users.find({_id:uid}).
+          exec(function (err, agenda_user) {
+                if (err) {
+                    res.status(500)
+                    res.json(err)
+                }else{
+                    model.Agenda.find({'_id' : { "$in": agenda_user[0].agendas } }).
+                    exec(function(err,agenda){
+                        res.json(agenda)
+                    })  
+                }
+          });
+    }else{
+        res.json([])
+    }
+})
+
+// Agregar a una cita a la agenda del usuario
+Router.post('/events/new', (req, res)=> {
+    const agenda = new model.Agenda({
+        title: req.body.title,
+        start : req.body.start,
+        end : req.body.end
+    })
+    agenda.save((error, documento)=>{
+            if (error) {
+                res.json({msj:"Error","data":err});
+            }else{
+                model.Users.findByIdAndUpdate(req.session.userId,{ '$push': { 'agendas': documento._id } }, (err,doc)=>{
+                    res.json({msj:"Agenda Salvada", "data": documento});
+                })
+            }
+          });
+})
+
 // Eliminar un cita por su id
-Router.get('/agenda/delete/:id', function(req, res) {
+Router.post('/events/delete/:id', function(req, res) {
     let uid = req.params.id
-    model.Agenda.remove({agendaId: uid}, function(error) {
+    model.Agenda.remove({"_id": uid}, function(error) {
         if(error) {
             res.status(500)
             res.json(error)
+        }else{
+            model.Users.findByIdAndUpdate(req.session.userId,{ '$pull': { 'agendas': uid } }, (err,doc)=>{
+                res.send("Registro eliminado.")
+            })
         }
-        res.send("Registro eliminado")
     })
 })
 
 // Actualizar cita
-Router.post('/agenda/:id', function(req, res) {
-
+Router.post('/events/update/:id', function(req, res) {
+    let uid = req.params.id
+    let updateDate = { "$set":{ "start": req.body.start , "end": req.body.end } } 
+    console.log('update',uid, updateDate)
+    model.Agenda.update({_id: uid},updateDate, function(error, response) {
+        if(error) {
+            res.status(500)
+            res.json(error)
+        }else{
+            res.send("Registro actualizado.")
+        }
+    })
 })
 
 
