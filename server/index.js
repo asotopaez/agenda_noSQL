@@ -15,19 +15,19 @@ const Server = http.createServer(app)
 mongoose.connect('mongodb://localhost/agenda')
 
 
-const crearUsuario = ()=>{
+const crearUsuario = (name,lastname,username)=>{
     let user = new model.Users({
         userId: Math.floor(Math.random() * 50),
-        name: 'Alejandro',
-        lastname: 'Soto',
+        name: name,
+        lastname: lastname,
         pass: '123456',
-        username: 'Asoto'
+        username: username
     })
     user.save(function(error) {
         if (error) {
             //console.log(error)
         }
-        console.log("Registro guardado, su Usuario es: Asoto y su Password es: 123456")
+        console.log("Registro guardado, su Usuario es: "+username+" y su Password es: 123456")
     })
 
 
@@ -46,6 +46,8 @@ app.use(session({secret: 'alex_agenda',
 app.use('/', Routing);
 
 Server.listen(PORT, function() {
-  crearUsuario()
+  crearUsuario("Alejandro","Soto","Asoto")
+  crearUsuario("Usuario","Uno","usuario1")
+  crearUsuario("Usuario","Dos","usuario2")
   console.log('Server is listeng on port: ' + PORT)
 })
