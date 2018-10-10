@@ -36,8 +36,6 @@ class EventManager {
         }
         $.post('/events/update/'+eventId, ev, (response) => {
             if(response.msj!="Error"){
-                $('#start_date, #titulo, #end_date').val('');
-                $('.calendario').fullCalendar('renderEvent', response.data)
                 alert(response.msj)
             }else{
                 alert(response.data)
@@ -135,8 +133,6 @@ class EventManager {
                 $('.delete').css('background-color', '#a70f19')
             },
             eventDragStop: (event,jsEvent) => {
-                //console.log(event)
-                //console.log(jsEvent)
                 var trashEl = $('.delete');
                 var ofs = trashEl.offset();
                 var x1 = ofs.left;
