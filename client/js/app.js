@@ -126,6 +126,7 @@ class EventManager {
             dragRevertDuration: 0,
             timeFormat: 'H:mm',
             eventDrop: (event, jsEvent) => {
+                $('.delete').find('img').attr('src', "/css/delete.png");
                 this.actualizarEvento(event)
             },
             events: eventos,
